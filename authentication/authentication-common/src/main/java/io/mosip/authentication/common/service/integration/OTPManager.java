@@ -215,14 +215,15 @@ public class OTPManager {
 		String[] dateAndTime = new String[2];
 
 		DateTimeFormatter isoPattern = DateTimeFormatter.ofPattern(pattern);
+		String localReqTime = DateUtils.formatToISOString(DateUtils.parseUTCToLocalDateTime(requestTime));
 
-		ZonedDateTime zonedDateTime2 = ZonedDateTime.parse(requestTime, isoPattern);
-		ZoneId zone = zonedDateTime2.getZone();
-		ZonedDateTime dateTime3 = ZonedDateTime.now(zone);
-		ZonedDateTime dateTime = dateTime3.withZoneSameInstant(zone);
-		String date = dateTime.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+		ZonedDateTime zonedDateTime2 = ZonedDateTime.parse(localReqTime, isoPattern);
+//		ZoneId zone = zonedDateTime2.getZone();
+//		ZonedDateTime dateTime3 = ZonedDateTime.now(zone);
+//		ZonedDateTime dateTime = dateTime3.withZoneSameInstant(zone);
+		String date = zonedDateTime2.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
 		dateAndTime[0] = date;
-		String time = dateTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+		String time = zonedDateTime2.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
 		dateAndTime[1] = time;
 
 		return new SimpleEntry<>(date, time);
