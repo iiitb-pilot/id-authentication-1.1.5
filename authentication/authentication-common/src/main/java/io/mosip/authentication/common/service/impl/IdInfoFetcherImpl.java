@@ -41,8 +41,8 @@ import io.mosip.authentication.core.spi.indauth.match.MasterDataFetcher;
 import io.mosip.authentication.core.spi.indauth.match.MatchType;
 import io.mosip.authentication.core.spi.indauth.match.TriFunctionWithBusinessException;
 import io.mosip.authentication.core.spi.indauth.match.ValidateOtpFunction;
-import io.mosip.kernel.biometrics.constant.BiometricType;
 import io.mosip.kernel.core.cbeffutil.spi.CbeffUtil;
+import io.mosip.kernel.core.util.CryptoUtil;
 
 /**
  * Helper class to fetch identity values from request.
@@ -51,6 +51,9 @@ import io.mosip.kernel.core.cbeffutil.spi.CbeffUtil;
  */
 @Service
 public class IdInfoFetcherImpl implements IdInfoFetcher {
+
+	/** The Constant INDIVIDUAL BIOMETRICS. */
+	private static final String INDIVIDUAL_BIOMETRICS = "individualBiometrics";
 
 	/**  The OTPManager. */
 	@Autowired
@@ -259,21 +262,18 @@ public class IdInfoFetcherImpl implements IdInfoFetcher {
 	@Override
 	public Map<String, Entry<String, List<IdentityInfoDTO>>> getCbeffValues(Map<String, List<IdentityInfoDTO>> idEntity,
 			CbeffDocType[] types, MatchType matchType) throws IdAuthenticationBusinessException {
-		Map<String, Entry<String, List<IdentityInfoDTO>>> cbeffValuesForTypes = new HashMap<>();
-		for (CbeffDocType type : types) {
-			List<String> identityBioAttributes = getBioAttributeNames(type, matchType, idEntity);
-			for (String bioAttribute : identityBioAttributes) {
-				Optional<String> identityValue = getIdentityValue(bioAttribute, null, idEntity).findAny();
-				if (!identityValue.isEmpty()) {
-					cbeffValuesForTypes.putAll(getCbeffValuesForCbeffDocType(type, matchType, identityValue));
-				} else {
-					throw new IdAuthenticationBusinessException(
-							IdAuthenticationErrorConstants.BIOMETRIC_MISSING.getErrorCode(), String.format(
-									IdAuthenticationErrorConstants.BIOMETRIC_MISSING.getErrorMessage(), type.getName()));
-				}				
+		Optional<String> identityValue = getIdentityValue(INDIVIDUAL_BIOMETRICS, null, idEntity)
+				.findAny();
+		if (identityValue.isPresent()) {
+			Map<String, Entry<String, List<IdentityInfoDTO>>> cbeffValuesForTypes = new HashMap<>();
+			for (CbeffDocType type : types) {
+				cbeffValuesForTypes.putAll(getCbeffValuesForCbeffDocType(type, matchType, identityValue));
 			}
+			return cbeffValuesForTypes;
+
+		} else {
+			return Collections.emptyMap();
 		}
-		return cbeffValuesForTypes;
 	}
 
 	/**
@@ -289,7 +289,7 @@ public class IdInfoFetcherImpl implements IdInfoFetcher {
 			MatchType matchType, Optional<String> identityValue) throws IdAuthenticationBusinessException {
 		Map<String, String> bdbBasedOnType;
 		try {
-			bdbBasedOnType = cbeffUtil.getBDBBasedOnType(identityValue.get().getBytes(), type.getName(),
+			bdbBasedOnType = cbeffUtil.getBDBBasedOnType(CryptoUtil.decodeBase64(identityValue.get()), type.getName(),
 					null);
 		} catch (Exception e) {
 			throw new IdAuthenticationBusinessException(IdAuthenticationErrorConstants.BIOMETRIC_MISSING.getErrorCode(),
@@ -454,31 +454,6 @@ public class IdInfoFetcherImpl implements IdInfoFetcher {
 			return request.getDemographics().getMetadata().keySet();
 		}
 		return Set.of();
-	}
-	
-	/**
-	 * 
-	 * @param type
-	 * @param matchType
-	 * @return
-	 */
-	private List<String> getBioAttributeNames(CbeffDocType type, MatchType matchType,
-			Map<String, List<IdentityInfoDTO>> idEntity) {
-		if (matchType.toString().equals(BioMatchType.FGRIMG_COMPOSITE.toString()) ||
-				matchType.toString().equals(BioMatchType.FGRMIN_COMPOSITE.toString()) || 
-				matchType.toString().equals(BioMatchType.FGRIMG_UNKNOWN.toString())) {
-			return idEntity.keySet().stream().filter(bio -> bio.startsWith(BiometricType.FINGER.value().toString()))
-					.collect(Collectors.toList());
-		}
-		if (matchType.toString().equals(BioMatchType.IRIS_COMP.toString()) ||
-				matchType.toString().equals(BioMatchType.IRIS_UNKNOWN.toString())) {
-			return idEntity.keySet().stream().filter(bio -> bio.startsWith(BiometricType.IRIS.value().toString()))
-					.collect(Collectors.toList());
-		}
-		if (matchType.toString().equals(BioMatchType.FACE.toString())) {
-			return List.of(BiometricType.FACE.value());
-		}
-		return List.of(type.getType().value() + "_" + matchType.getIdMapping().getSubType());
 	}
 
 }

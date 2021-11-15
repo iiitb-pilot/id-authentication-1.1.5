@@ -7,9 +7,9 @@
 	<parent>
 		<groupId>io.mosip.authentication</groupId>
 		<artifactId>authentication-parent</artifactId>
-		<version>1.1.5.5-SNAPSHOT</version>
+		<version>1.1.5.4</version>
 	</parent>
-	<version>1.1.5.5-SNAPSHOT</version>
+	<version>1.1.5.4</version>
 	<artifactId>authentication-otp-service</artifactId>
 	<name>authentication-otp-service</name>
 	<properties>
@@ -29,10 +29,6 @@
 					<groupId>javax.xml.bind</groupId>
 					<artifactId>jaxb-api</artifactId>
 				</exclusion>
-				<exclusion>
-					<groupId>io.mosip.kernel</groupId>
-					<artifactId>kernel-core</artifactId>
-				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -45,12 +41,6 @@
 			<groupId>io.mosip.kernel</groupId>
 			<artifactId>kernel-dataaccess-hibernate</artifactId>
 			<version>${kernel-dataaccess-hibernate.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>io.mosip.kernel</groupId>
-					<artifactId>kernel-core</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<!-- Postgres -->
 		<dependency>
@@ -62,12 +52,6 @@
 			<groupId>io.mosip.kernel</groupId>
 			<artifactId>kernel-cbeffutil-api</artifactId>
 			<version>${kernel-cbeffutil-api.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>io.mosip.kernel</groupId>
-					<artifactId>kernel-core</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>io.micrometer</groupId>
@@ -93,8 +77,8 @@
 		</dependency>
 		<dependency>
 			<groupId>io.mosip.kernel</groupId>
-			<artifactId>kernel-logger-logback</artifactId>
-			<version>${kernel-logger-logback.version}</version>
+			<artifactId>kernel-core</artifactId>
+			<version>${kernel-core.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.springframework.boot</groupId>
@@ -103,8 +87,12 @@
 					</artifactId>
 				</exclusion>
 				<exclusion>
-					<groupId>io.mosip.kernel</groupId>
-					<artifactId>kernel-core</artifactId>
+					<groupId>org.glassfish.jaxb</groupId>
+					<artifactId>jaxb-runtime</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.xml.bind</groupId>
+					<artifactId>jaxb-api</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>

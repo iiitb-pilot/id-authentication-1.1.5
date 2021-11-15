@@ -40,7 +40,6 @@ import io.mosip.authentication.core.exception.IdAuthenticationBusinessException;
 import io.mosip.authentication.core.exception.RestServiceException;
 import io.mosip.authentication.core.exception.RetryingBeforeRetryIntervalException;
 import io.mosip.authentication.core.logger.IdaLogger;
-import io.mosip.kernel.core.cbeffutil.jaxbclasses.SingleType;
 import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.kernel.core.util.DateUtils;
 import io.mosip.kernel.core.websub.model.Event;
@@ -94,6 +93,10 @@ public class CredentialStoreService {
 	/** The identity cache repo. */
 	@Autowired
 	private IdentityCacheRepository identityCacheRepo;
+
+	/** The audit helper. */
+	@Autowired
+	private AuditHelper auditHelper;
 
 	/** The data share manager. */
 	@Autowired
@@ -382,10 +385,8 @@ public class CredentialStoreService {
 	 * @return the map[]
 	 */
 	private Map<String, Object>[] splitDemoBioData(Map<String, Object> credentialData) {
-		Map<Boolean, List<Entry<String, Object>>> bioOrDemoData = credentialData.entrySet().stream()
-				.collect(Collectors.partitioningBy(entry -> entry.getKey().toLowerCase().startsWith(SingleType.FINGER.value().toLowerCase())
-						|| entry.getKey().toLowerCase().startsWith(SingleType.IRIS.value().toLowerCase())
-						|| entry.getKey().toLowerCase().startsWith(SingleType.FACE.value().toLowerCase())));
+		Map<Boolean, List<Entry<String, Object>>> bioOrDemoData = credentialData.entrySet().stream().collect(Collectors
+				.partitioningBy(entry -> entry.getKey().equalsIgnoreCase(IdAuthCommonConstants.INDIVIDUAL_BIOMETRICS)));
 
 		Map<String, Object> demoData = bioOrDemoData.get(false).stream()
 				.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
